@@ -4,6 +4,7 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './entities/customer.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { encryptPassword } from 'src/utils/encryptPassoword';
 
 @Injectable()
 export class CustomersService {
@@ -12,7 +13,20 @@ export class CustomersService {
     private readonly customerRepository: Repository<Customer>,
   ) {}
 
-  create(dto: CreateCustomerDto) {
+  async create(dto: CreateCustomerDto) {
+    //verify if email is already in use
+    if (dto?.email) {
+      const customer = await this.customerRepository.findOneBy({
+        email: dto.email,
+      });
+      if (customer) return null;
+    }
+
+    //if exist a password encryptPassword
+    if (dto?.password) {
+      dto.password = await encryptPassword(dto.password);
+    }
+
     const customer = this.customerRepository.create({
       ...dto,
       createdAt: new Date(),
@@ -32,6 +46,20 @@ export class CustomersService {
   async update(id: string, dto: UpdateCustomerDto) {
     const customer = await this.customerRepository.findOneBy({ id });
     if (!customer) return null;
+
+    //verify if email is already in use
+    if (dto?.email) {
+      const customer = await this.customerRepository.findOneBy({
+        email: dto.email,
+      });
+      if (customer && customer.id !== id) return null;
+    }
+
+    //if exist a password encryptPassword
+    if (dto?.password) {
+      dto.password = await encryptPassword(dto.password);
+    }
+
     this.customerRepository.merge(customer, dto);
     return this.customerRepository.save(customer);
   }

@@ -1,73 +1,62 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { Customer } from './entities/customer.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { encryptPassword } from 'src/utils/encryptPassoword';
+import { Customer } from './entities/customer.entity';
 
 @Injectable()
 export class CustomersService {
   constructor(
     @InjectRepository(Customer)
-    private readonly customerRepository: Repository<Customer>,
+    private readonly customersRepository: Repository<Customer>,
   ) {}
 
   async create(dto: CreateCustomerDto) {
-    //verify if email is already in use
-    if (dto?.email) {
-      const customer = await this.customerRepository.findOneBy({
-        email: dto.email,
+    if (dto?.cnpj) {
+      const customer = await this.customersRepository.findOneBy({
+        cnpj: dto.cnpj,
       });
-      if (customer) return new BadRequestException('Este email ja esta em uso');
+      if (customer) return new BadRequestException('Este cnpj ja esta em uso');
     }
 
-    //if exist a password encryptPassword
-    if (dto?.password) {
-      dto.password = await encryptPassword(dto.password);
-    }
-
-    const customer = this.customerRepository.create({
+    const customer = this.customersRepository.create({
       ...dto,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    return this.customerRepository.save(customer);
+    return this.customersRepository.save(customer);
   }
 
   findAll() {
-    return this.customerRepository.find();
+    return this.customersRepository.find();
   }
 
   findOne(id: string) {
-    return this.customerRepository.findOneBy({ id });
+    return this.customersRepository.findOneBy({ id });
   }
 
   async update(id: string, dto: UpdateCustomerDto) {
-    const customer = await this.customerRepository.findOneBy({ id });
-    if (!customer) return new BadRequestException('Cliente nao encontrado');
+    const customer = await this.customersRepository.findOneBy({ id });
+    if (!customer) throw new BadRequestException('Cliente nao encontrado');
 
-    //verify if email is already in use
-    if (dto?.email) {
-      const customer = await this.customerRepository.findOneBy({
-        email: dto.email,
+    if (dto?.cnpj) {
+      const customer = await this.customersRepository.findOneBy({
+        cnpj: dto.cnpj,
       });
       if (customer && customer.id !== id)
-        return new BadRequestException('Este email ja esta em uso');
+        throw new BadRequestException(
+          'Este cnpj ja esta em uso em outro cliente',
+        );
     }
 
-    //if exist a password encryptPassword
-    if (dto?.password) {
-      dto.password = await encryptPassword(dto.password);
-    }
-
-    this.customerRepository.merge(customer, dto);
-    return this.customerRepository.save(customer);
+    this.customersRepository.merge(customer, dto);
+    return this.customersRepository.save(customer);
   }
 
   async delete(id: string) {
-    const customer = await this.customerRepository.findOneBy({ id });
+    const customer = await this.customersRepository.findOneBy({ id });
     if (!customer) return null;
-    return this.customerRepository.remove(customer);
+    return this.customersRepository.remove(customer);
   }
 }

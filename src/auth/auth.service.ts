@@ -1,28 +1,26 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Customer } from 'src/customers/entities/customer.entity';
 import { Repository } from 'typeorm';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { AuthDto } from './dto/authenticate.dto';
+import { AuthDto } from './dto/auth.dto';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(Customer)
-    private readonly customerRepository: Repository<Customer>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
   ) {}
 
   async authenticateUser(authDto: AuthDto): Promise<any> {
-    //verify if user exists
-    const user = await this.customerRepository.findOneBy({
+    const user = await this.userRepository.findOneBy({
       email: authDto.email,
     });
 
     if (!user) return new UnauthorizedException('Email ou senha inválidos');
 
-    //verify if password is correct
     const isPasswordvalid = compare(authDto.password, user.password);
 
     if (!isPasswordvalid)

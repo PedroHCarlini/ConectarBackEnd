@@ -1,5 +1,5 @@
 import { BeforeInsert, Column, Entity, PrimaryColumn } from 'typeorm';
-const { nanoid } = require('nanoid');
+import { nanoid } from 'nanoid';
 
 @Entity('customers')
 export class Customer {
@@ -7,16 +7,27 @@ export class Customer {
   id: string;
 
   @Column()
-  name: string;
+  customerName: string;
 
   @Column()
-  email: string;
+  cnpj: string;
 
   @Column()
-  password: string;
+  legalName: string;
 
   @Column()
-  role: 'admin' | 'user';
+  conectaPlus: boolean;
+
+  @Column()
+  status: boolean;
+
+  @Column('text', {
+    transformer: {
+      to: (value: string[]) => JSON.stringify(value),
+      from: (value: string) => JSON.parse(value),
+    },
+  })
+  tags: string[];
 
   @Column()
   createdAt: Date;

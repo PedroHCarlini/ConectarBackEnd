@@ -1,16 +1,25 @@
-import { IsEmail, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class CreateCustomerDto {
   @IsString()
-  name: string;
-
-  @IsEmail()
-  email: string;
+  customerName: string;
 
   @IsString()
+  cnpj: string;
+
+  @IsString()
+  legalName: string;
+
+  @IsBoolean()
   @IsOptional()
-  password?: string;
+  conectaPlus: boolean;
 
-  @IsString()
-  role: 'admin' | 'user';
+  @IsBoolean()
+  @IsOptional()
+  status: boolean;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  tags: string[];
 }

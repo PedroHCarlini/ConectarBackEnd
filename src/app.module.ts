@@ -3,8 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CustomersModule } from './customers/customers.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthenticateModule } from './authenticate/authenticate.module';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { ConfigModule } from '@nestjs/config';
       synchronize: true,
     }),
     CustomersModule,
-    AuthenticateModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

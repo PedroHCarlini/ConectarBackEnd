@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './entities/customer.entity';
@@ -19,7 +19,7 @@ export class CustomersService {
       const customer = await this.customerRepository.findOneBy({
         email: dto.email,
       });
-      if (customer) return null;
+      if (customer) return new BadRequestException('Este email ja esta em uso');
     }
 
     //if exist a password encryptPassword
@@ -45,14 +45,15 @@ export class CustomersService {
 
   async update(id: string, dto: UpdateCustomerDto) {
     const customer = await this.customerRepository.findOneBy({ id });
-    if (!customer) return null;
+    if (!customer) return new BadRequestException('Cliente nao encontrado');
 
     //verify if email is already in use
     if (dto?.email) {
       const customer = await this.customerRepository.findOneBy({
         email: dto.email,
       });
-      if (customer && customer.id !== id) return null;
+      if (customer && customer.id !== id)
+        return new BadRequestException('Este email ja esta em uso');
     }
 
     //if exist a password encryptPassword

@@ -1,36 +1,37 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Customer } from 'src/customers/entities/customer.entity';
 import { Repository } from 'typeorm';
-import { AuthenticateDto } from './dto/authenticate.dto';
 import { compare } from 'bcrypt';
-import { access } from 'fs';
-import { ReturnAuthenticateDto } from './dto/returnAuthenticate.dto';
 import { JwtService } from '@nestjs/jwt';
+import { AuthDto } from './dto/authenticate.dto';
 
 @Injectable()
-export class AuthenticateService {
+export class AuthService {
   constructor(
     @InjectRepository(Customer)
     private readonly customerRepository: Repository<Customer>,
     private readonly jwtService: JwtService,
   ) {}
 
-  async authenticateUser(authenticateDto: AuthenticateDto): Promise<any> {
+  async authenticateUser(authDto: AuthDto): Promise<any> {
     //verify if user exists
     const user = await this.customerRepository.findOneBy({
-      email: authenticateDto.email,
+      email: authDto.email,
     });
 
-    if (!user) return null;
+    if (!user) return new UnauthorizedException('Email ou senha inválidos');
 
     //verify if password is correct
+    const isPasswordvalid = compare(authDto.password, user.password);
 
-    const isPasswordvalid = compare(authenticateDto.password, user.password);
+    if (!isPasswordvalid)
+      return new UnauthorizedException('Email ou senha inválidos');
 
     return {
       accessToken: this.jwtService.sign({
-        id: user.id,
+        sub: user.id,
+        username: user.name,
         email: user.email,
         role: user.role,
       }),

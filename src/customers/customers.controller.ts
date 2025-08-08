@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -25,8 +26,8 @@ export class CustomersController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  findAll() {
-    return this.customersService.findAll();
+  findAll(@Query() query: any) {
+    return this.customersService.findAll(query);
   }
 
   @Get(':id')

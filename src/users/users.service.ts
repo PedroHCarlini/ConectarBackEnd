@@ -18,7 +18,7 @@ export class UsersService {
       const user = await this.userRepository.findOneBy({
         email: dto.email,
       });
-      if (user) return new BadRequestException('Este email ja esta em uso');
+      if (user) throw new BadRequestException('Este email ja esta em uso');
     }
 
     if (dto?.password) {
@@ -43,14 +43,14 @@ export class UsersService {
 
   async update(id: string, dto: UpdateUserDto) {
     const user = await this.userRepository.findOneBy({ id });
-    if (!user) return new BadRequestException('Cliente nao encontrado');
+    if (!user) throw new BadRequestException('Cliente nao encontrado');
 
     if (dto?.email) {
       const user = await this.userRepository.findOneBy({
         email: dto.email,
       });
       if (user && user.id !== id)
-        return new BadRequestException('Este email ja esta em uso');
+        throw new BadRequestException('Este email ja esta em uso');
     }
 
     if (dto?.password) {
@@ -63,7 +63,7 @@ export class UsersService {
 
   async delete(id: string) {
     const user = await this.userRepository.findOneBy({ id });
-    if (!user) return null;
+    if (!user) throw new BadRequestException('Cliente nao encontrado');
     return this.userRepository.remove(user);
   }
 }

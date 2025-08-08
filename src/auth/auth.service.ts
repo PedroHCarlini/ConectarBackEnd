@@ -19,12 +19,12 @@ export class AuthService {
       email: authDto.email,
     });
 
-    if (!user) return new UnauthorizedException('Email ou senha inválidos');
+    if (!user) throw new UnauthorizedException('Email ou senha inválidos');
 
     const isPasswordvalid = compare(authDto.password, user.password);
 
     if (!isPasswordvalid)
-      return new UnauthorizedException('Email ou senha inválidos');
+      throw new UnauthorizedException('Email ou senha inválidos');
 
     return {
       accessToken: this.jwtService.sign({

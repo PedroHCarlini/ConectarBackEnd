@@ -4,6 +4,7 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Customer } from './entities/customer.entity';
+import { resolveSortFilters } from 'src/utils/resolveSortFilters';
 
 @Injectable()
 export class CustomersService {
@@ -17,7 +18,7 @@ export class CustomersService {
       const customer = await this.customersRepository.findOneBy({
         cnpj: dto.cnpj,
       });
-      if (customer) return new BadRequestException('Este cnpj ja esta em uso');
+      if (customer) throw new BadRequestException('Este cnpj ja esta em uso');
     }
 
     const customer = this.customersRepository.create({
@@ -28,8 +29,23 @@ export class CustomersService {
     return this.customersRepository.save(customer);
   }
 
-  findAll() {
-    return this.customersRepository.find();
+  findAll(params: any) {
+    let sortFilter = {};
+    if (params.status !== undefined) {
+      params.status = params.status === 'true';
+    }
+
+    if (params.conectaPlus !== undefined) {
+      params.conectaPlus = params.conectaPlus === 'true';
+    }
+
+    if (params.sortBy && params.order) {
+      sortFilter = resolveSortFilters(params.sortBy, params.order);
+      delete params.sortBy;
+      delete params.order;
+    }
+
+    return this.customersRepository.find({ where: params, order: sortFilter });
   }
 
   findOne(id: string) {
@@ -56,7 +72,7 @@ export class CustomersService {
 
   async delete(id: string) {
     const customer = await this.customersRepository.findOneBy({ id });
-    if (!customer) return null;
+    if (!customer) throw new BadRequestException('Cliente nao encontrado');
     return this.customersRepository.remove(customer);
   }
 }

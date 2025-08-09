@@ -18,6 +18,7 @@ export class AuthService {
     const user = await this.userRepository.findOneBy({
       email: authDto.email,
     });
+    console.log(user);
 
     if (!user) throw new UnauthorizedException('Email ou senha inválidos');
 

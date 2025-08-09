@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Customer } from './entities/customer.entity';
 import { resolveSortFilters } from 'src/utils/resolveSortFilters';
+import { customersMockForUser } from './mock/customers.mock';
 
 @Injectable()
 export class CustomersService {
@@ -29,7 +30,9 @@ export class CustomersService {
     return this.customersRepository.save(customer);
   }
 
-  findAll(params: any) {
+  findAll(params: any, userRole: string) {
+    if (userRole === 'user') return customersMockForUser;
+
     let sortFilter = {};
     if (params.status !== undefined) {
       params.status = params.status === 'true';
